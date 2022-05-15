@@ -21,17 +21,19 @@ type Signature struct {
 func (s *Signature) UniqueKey() string {
 	// очищаем прочие данные, чтобы они не хранились в блокчейне и голосование было анонимным
 	signature := s.SignedMessage
-	s.SignedMessage = ""
-	s.ElectorMSP = ""
-	s.ElectionName = ""
+
+	if s.MessageHash != "" {
+		s.SignedMessage = ""
+		s.ElectorMSP = ""
+		s.ElectionName = ""
+	}
 
 	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, signature)
 }
 
 func (s *Signature) Validate() error {
 	// если хэш уже расчитан - не надо выполнять дальнейшую валидацию
-	// так, как используется sha256 - длина хэша 32 байта
-	if len(s.MessageHash) == 32 {
+	if s.MessageHash != "" {
 		return nil
 	}
 
