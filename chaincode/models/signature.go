@@ -53,8 +53,6 @@ func (s *Signature) Validate() error {
 		return fmt.Errorf(errMsgTemplate, strings.Join(emptyFields, ", "))
 	}
 
-	// TODO: добавить валидацию подписи
-
 	if ok := utils.CheckSignature(utils.GetAdminPub(), s.HashMessage(), []byte(s.SignedMessage)); !ok {
 		return fmt.Errorf("wrong signature")
 	}

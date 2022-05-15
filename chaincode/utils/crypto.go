@@ -3,7 +3,7 @@ package utils
 import "crypto/ecdsa"
 
 func GetAdminPub() *ecdsa.PublicKey {
-	// TODO: захардеодить и распарсить ключ
+	// TODO: захардкодить и распарсить ключ
 	return &ecdsa.PublicKey{}
 }
 
