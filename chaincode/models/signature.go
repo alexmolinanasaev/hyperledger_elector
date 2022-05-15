@@ -15,14 +15,15 @@ type Signature struct {
 	ElectionName  string `json:"electionName,omitempty"`
 	ElectorMSP    string `json:"electorMSP,omitempty"`
 	SignedMessage string `json:"signedMessage,omitempty"`
-	MessageHash   string `json:"messageHash"`
+	// TODO: убедиться что все операции при превращении MessageHash из строки в массив байтов приведут к тем же результатам
+	MessageHash []byte `json:"messageHash"`
 }
 
 func (s *Signature) UniqueKey() string {
 	// очищаем прочие данные, чтобы они не хранились в блокчейне и голосование было анонимным
 	signature := s.SignedMessage
 
-	if s.MessageHash != "" {
+	if len(s.MessageHash) == 32 {
 		s.SignedMessage = ""
 		s.ElectorMSP = ""
 		s.ElectionName = ""
@@ -33,7 +34,7 @@ func (s *Signature) UniqueKey() string {
 
 func (s *Signature) Validate() error {
 	// если хэш уже расчитан - не надо выполнять дальнейшую валидацию
-	if s.MessageHash != "" {
+	if len(s.MessageHash) == 32 {
 		return nil
 	}
 
@@ -61,6 +62,11 @@ func (s *Signature) Validate() error {
 }
 
 func (s *Signature) HashMessage() []byte {
+	// если хэш уже расчитан - просто возвращаем его
+	if len(s.MessageHash) == 32 {
+		return s.MessageHash
+	}
+
 	// ElectionName.ElectorMSP
 	messageHash := "%s.%s"
 	messageHash = fmt.Sprintf(messageHash, s.ElectionName, s.ElectorMSP)

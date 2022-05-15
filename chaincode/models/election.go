@@ -12,6 +12,7 @@ type Election struct {
 	Name        string   `json:"name"`
 	Candidates  []string `json:"candidates"`
 	Nominations []string `json:"nominations"`
+	Closed      bool     `json:"closed"`
 }
 
 func (e *Election) UniqueKey() string {
