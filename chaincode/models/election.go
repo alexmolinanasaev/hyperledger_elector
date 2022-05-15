@@ -40,3 +40,13 @@ func (e *Election) Validate() error {
 
 	return nil
 }
+
+func (e *Election) Close() error {
+	if e.Closed {
+		return fmt.Errorf("already closed")
+	}
+
+	e.Closed = true
+
+	return nil
+}
