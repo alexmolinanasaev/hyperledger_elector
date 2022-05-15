@@ -9,11 +9,10 @@ import (
 
 func TestElectorModel(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Elector Model Suite")
+	RunSpecs(t, "Election Model Suite")
 }
 
 var _ = Describe("Elector Model", func() {
-
 	Context("Validation", func() {
 		election := &Election{}
 		It("validation failed", func() {
@@ -23,13 +22,10 @@ var _ = Describe("Elector Model", func() {
 		It("Validation passed", func() {
 			election.Name = "Best Crypto Currency"
 			election.Candidates = []string{"BTC", "USDT", "MINA", "DOGGY"}
-			election.Nominations = []string{"Most Stable", "Best Liquidity", "Best Perspective"}
+			election.Nominations = []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"}
 
 			Expect(election.Validate()).Should(BeNil())
 		})
-	})
-
-	Context("Validation passed", func() {
 	})
 
 	Context("Unique Key", func() {

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"crypto/sha256"
+	"crypto/ecdsa"
 	"fmt"
 	"strings"
 
@@ -15,8 +15,8 @@ type Signature struct {
 	ElectionName  string `json:"electionName,omitempty"`
 	ElectorMSP    string `json:"electorMSP,omitempty"`
 	SignedMessage string `json:"signedMessage,omitempty"`
-	// TODO: убедиться что все операции при превращении MessageHash из строки в массив байтов приведут к тем же результатам
-	MessageHash []byte `json:"messageHash"`
+	MessageHash   []byte `json:"messageHash"`
+	SignerPubKey  *ecdsa.PublicKey
 }
 
 func (s *Signature) UniqueKey() string {
@@ -54,23 +54,22 @@ func (s *Signature) Validate() error {
 		return fmt.Errorf(errMsgTemplate, strings.Join(emptyFields, ", "))
 	}
 
-	if ok := utils.CheckSignature(utils.GetAdminPub(), s.HashMessage(), []byte(s.SignedMessage)); !ok {
+	if s.SignerPubKey == nil {
+		return fmt.Errorf("[INTERNAL] signer pub key not provided")
+	}
+
+	if ok := utils.CheckSignature(s.SignerPubKey, s.HashElectorPayload(), []byte(s.SignedMessage)); !ok {
 		return fmt.Errorf("wrong signature")
 	}
 
 	return nil
 }
 
-func (s *Signature) HashMessage() []byte {
+func (s *Signature) HashElectorPayload() []byte {
 	// если хэш уже расчитан - просто возвращаем его
 	if len(s.MessageHash) == 32 {
 		return s.MessageHash
 	}
 
-	// ElectionName.ElectorMSP
-	messageHash := "%s.%s"
-	messageHash = fmt.Sprintf(messageHash, s.ElectionName, s.ElectorMSP)
-
-	hashBytes := sha256.Sum256([]byte(messageHash))
-	return hashBytes[:]
+	return utils.HashElectorPayload(s.ElectionName, s.ElectorMSP)
 }

@@ -20,7 +20,7 @@ func GetSignatureStore(stub shim.ChaincodeStubInterface) *SignatureStore {
 
 func (s *SignatureStore) PutOne(signature *models.Signature) error {
 	messageHash := &models.Signature{
-		MessageHash: signature.HashMessage(),
+		MessageHash: signature.HashElectorPayload(),
 	}
 
 	return s.store.putOne(messageHash)
