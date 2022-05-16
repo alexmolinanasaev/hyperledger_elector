@@ -19,7 +19,32 @@ func GetElectionStore(stub shim.ChaincodeStubInterface) *ElectionStore {
 }
 
 func (s *ElectionStore) PutOne(election *models.Election) error {
+	// нельзя вставить голосование если такое уже есть
+	foundElection, err := s.GetOneByKey(election.UniqueKey())
+	if foundElection != nil && err == nil {
+		return fmt.Errorf("already exist")
+	}
+
+	// нельзя сохранить закрытое голосование
+	election.Closed = false
 	return s.store.putOne(election)
+}
+
+func (s *ElectionStore) CloseElection(election *models.Election) error {
+	// сущность голосования нельзя изменить после создания. Голосование можно только закрыть
+	// если закрываемое голосование не существует, то и закрыть мы не можем
+	foundElection, err := s.GetOneByKey(election.UniqueKey())
+	if err != nil || foundElection == nil {
+		return fmt.Errorf("non existent election cannot be closed")
+	}
+
+	if err := foundElection.Close(); err != nil {
+		return err
+	}
+
+	election.Close()
+
+	return s.store.putOne(foundElection)
 }
 
 func (s *ElectionStore) PutMany(election []*models.Election) error {
@@ -37,6 +62,10 @@ func (s *ElectionStore) GetOneByKey(key string) (*models.Election, error) {
 	electionRaw, err := s.store.getOneByKey(key)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get election by key: %s", err)
+	}
+
+	if electionRaw == nil {
+		return nil, nil
 	}
 
 	result := &models.Election{}
