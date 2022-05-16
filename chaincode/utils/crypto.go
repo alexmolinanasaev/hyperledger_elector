@@ -57,14 +57,6 @@ func ExtractPubKeyFromCert(certPEM []byte) (*ecdsa.PublicKey, error) {
 	return cert.PublicKey.(*ecdsa.PublicKey), nil
 }
 
-// func SignMessage(priv *ecdsa.PrivateKey, msg string) ([]byte, error) {
-// 	sig, err := ecdsa.SignASN1(rand.Reader, priv, getDigest([]byte(msg)))
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return SignatureToLowS(&priv.PublicKey, sig)
-// }
-
 type Signer struct {
 	priv *ecdsa.PrivateKey
 }
@@ -98,12 +90,6 @@ func (s *Signer) SignElectorPayload(electionName, electorMSP string) ([]byte, er
 
 	return SignatureToLowS(&s.priv.PublicKey, sig)
 }
-
-// func GetDigest(payload []byte) []byte {
-// 	hasher := sha256.New()
-// 	hasher.Write(payload)
-// 	return hasher.Sum(nil)
-// }
 
 func HashElectorPayload(electionName, electorMSP string) []byte {
 	// ElectionName.ElectorMSP
