@@ -19,6 +19,15 @@ func GetSignatureStore(stub shim.ChaincodeStubInterface) *SignatureStore {
 }
 
 func (s *SignatureStore) PutOne(signature *models.Signature) error {
+	foundSignature, err := s.GetOneByKey(signature.UniqueKey())
+	if err != nil {
+		return fmt.Errorf("cannot verify if already exist: %s", err)
+	}
+
+	if foundSignature != nil {
+		return fmt.Errorf("already exist")
+	}
+
 	messageHash := &models.Signature{
 		MessageHash: signature.HashElectorPayload(),
 	}
@@ -41,6 +50,10 @@ func (s *SignatureStore) GetOneByKey(key string) (*models.Signature, error) {
 	signatureRaw, err := s.store.getOneByKey(key)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get signature by key: %s", err)
+	}
+
+	if signatureRaw == nil {
+		return nil, nil
 	}
 
 	result := &models.Signature{}

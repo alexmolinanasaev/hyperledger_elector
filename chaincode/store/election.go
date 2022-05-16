@@ -21,7 +21,11 @@ func GetElectionStore(stub shim.ChaincodeStubInterface) *ElectionStore {
 func (s *ElectionStore) PutOne(election *models.Election) error {
 	// нельзя вставить голосование если такое уже есть
 	foundElection, err := s.GetOneByKey(election.UniqueKey())
-	if foundElection != nil && err == nil {
+	if err != nil {
+		return fmt.Errorf("cannot verify if already exist: %s", err)
+	}
+
+	if foundElection != nil {
 		return fmt.Errorf("already exist")
 	}
 

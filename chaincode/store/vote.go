@@ -39,6 +39,10 @@ func (s *VoteStore) GetOneByKey(key string) (*models.Vote, error) {
 		return nil, fmt.Errorf("cannot get vote by key: %s", err)
 	}
 
+	if voteRaw == nil {
+		return nil, nil
+	}
+
 	result := &models.Vote{}
 	if err := json.Unmarshal(voteRaw, result); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal vote: %s", err)

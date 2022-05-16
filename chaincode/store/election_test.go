@@ -18,29 +18,27 @@ var _ = Describe("Election store", func() {
 	election := &models.Election{}
 
 	Context("Put one", func() {
-		Context("Without putting state", func() {
-			// главное проверить что валидация не прошла - неважно по какой причине
-			It("Failed validation", func() {
-				Expect(electionStore.PutOne(election)).ShouldNot(Succeed())
-			})
+		// главное проверить что валидация не прошла - неважно по какой причине
+		It("Failed validation", func() {
+			Expect(electionStore.PutOne(election)).Should(MatchError("validation error: current fields are empty: [name, candidates]"))
 		})
 
-		Context("Putting state", func() {
-			election.Name = "Best Crypto Currency"
-			election.Candidates = []string{"BTC", "USDT", "MINA", "DOGGY"}
-			election.Nominations = []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"}
+		It("Success", func() {
+			election = &models.Election{
+				Name:        "Best Crypto Currency",
+				Candidates:  []string{"BTC", "USDT", "MINA", "DOGGY"},
+				Nominations: []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"},
+			}
 
-			It("Success", func() {
-				electorChaincode.MockTransactionStart("save election")
-				Expect(electionStore.PutOne(election)).Should(Succeed())
-				electorChaincode.MockTransactionEnd("save election")
-			})
+			electorChaincode.MockTransactionStart("save election")
+			Expect(electionStore.PutOne(election)).Should(Succeed())
+			electorChaincode.MockTransactionEnd("save election")
+		})
 
-			It("Already exist", func() {
-				electorChaincode.MockTransactionStart("save election")
-				Expect(electionStore.PutOne(election)).Should(MatchError("already exist"))
-				electorChaincode.MockTransactionEnd("save election")
-			})
+		It("Already exist", func() {
+			electorChaincode.MockTransactionStart("save election")
+			Expect(electionStore.PutOne(election)).Should(MatchError("already exist"))
+			electorChaincode.MockTransactionEnd("save election")
 		})
 	})
 
@@ -50,7 +48,9 @@ var _ = Describe("Election store", func() {
 		})
 
 		It("Success", func() {
+			electorChaincode.MockTransactionStart("get election")
 			Expect(electionStore.GetOneByKey(election.UniqueKey())).Should(Equal(election))
+			electorChaincode.MockTransactionEnd("close election")
 		})
 	})
 

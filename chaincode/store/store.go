@@ -40,6 +40,17 @@ func (s *store) putOne(data storeable) error {
 	return nil
 }
 
+func (s *store) putMany(data []storeable) error {
+	for _, d := range data {
+		err := s.putOne(d)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *store) getOneByKey(key string) ([]byte, error) {
 	return s.stub.GetState(key)
 }
