@@ -1,20 +1,16 @@
-package models
+package models_test
 
 import (
-	"testing"
+	"elector/chaincode/models"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestElectorModel(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Election Model Suite")
-}
-
 var _ = Describe("Elector Model", func() {
+	election := &models.Election{}
+
 	Context("Validation", func() {
-		election := &Election{}
 		It("validation failed", func() {
 			Expect(election.Validate()).Should(MatchError("current fields are empty: [name, candidates]"))
 		})
@@ -24,25 +20,19 @@ var _ = Describe("Elector Model", func() {
 			election.Candidates = []string{"BTC", "USDT", "MINA", "DOGGY"}
 			election.Nominations = []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"}
 
-			Expect(election.Validate()).Should(BeNil())
+			Expect(election.Validate()).Should(Succeed())
 		})
 	})
 
-	Context("Unique Key", func() {
-		election := &Election{
-			Name: "Best Crypto Currency",
-		}
-
+	Context("Unique key", func() {
 		It("Correct Unique Key", func() {
 			Expect(election.UniqueKey()).Should(Equal("election_Best Crypto Currency"))
 		})
 	})
 
 	Context("Close", func() {
-		election := &Election{}
-
 		It("Is not closed yet", func() {
-			Expect(election.Close()).Should(BeNil())
+			Expect(election.Close()).Should(Succeed())
 		})
 
 		It("Is closed yet", func() {
