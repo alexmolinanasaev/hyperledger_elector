@@ -27,16 +27,16 @@ func (v *Vote) Validate() error {
 		emptyFields = append(emptyFields, "signature")
 	}
 
-	if err := v.Signature.Validate(); err != nil {
-		return fmt.Errorf("signature validation error: %s", err)
-	}
-
 	if v.Candidate == "" {
 		emptyFields = append(emptyFields, "candidate")
 	}
 
 	if len(emptyFields) != 0 {
 		return fmt.Errorf(emptyFieldsErrMsgTemplate, strings.Join(emptyFields, ", "))
+	}
+
+	if err := v.Signature.Validate(); err != nil {
+		return fmt.Errorf("signature validation error: %s", err)
 	}
 
 	return nil

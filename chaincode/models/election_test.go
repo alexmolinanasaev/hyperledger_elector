@@ -11,11 +11,11 @@ var _ = Describe("Elector Model", func() {
 	election := &models.Election{}
 
 	Context("Validation", func() {
-		It("validation failed", func() {
+		It("Empty fields", func() {
 			Expect(election.Validate()).Should(MatchError("current fields are empty: [name, candidates]"))
 		})
 
-		It("Validation passed", func() {
+		It("Success", func() {
 			election.Name = "Best Crypto Currency"
 			election.Candidates = []string{"BTC", "USDT", "MINA", "DOGGY"}
 			election.Nominations = []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"}
