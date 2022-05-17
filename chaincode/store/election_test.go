@@ -43,14 +43,20 @@ var _ = Describe("Election store", func() {
 	})
 
 	Context("Get one", func() {
-		It("Does not exist", func() {
-			Expect(electionStore.GetOneByKey("wrongKey")).Should(BeNil())
+		It("Not found", func() {
+			electorChaincode.MockTransactionStart("get election")
+
+			e, err := electionStore.GetOneByKey("wrongKey")
+			Expect(e).Should(BeNil())
+			Expect(err).Should(BeNil())
+
+			electorChaincode.MockTransactionEnd("get election")
 		})
 
 		It("Success", func() {
 			electorChaincode.MockTransactionStart("get election")
 			Expect(electionStore.GetOneByKey(election.UniqueKey())).Should(Equal(election))
-			electorChaincode.MockTransactionEnd("close election")
+			electorChaincode.MockTransactionEnd("get election")
 		})
 	})
 

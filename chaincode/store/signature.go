@@ -29,12 +29,11 @@ func (s *SignatureStore) PutOne(signature *models.Signature) error {
 		return err
 	}
 
-	fmt.Println("HERE!")
-
 	foundSignature, err := s.GetOneByKey(signature.UniqueKey())
 	if err != nil {
 		return fmt.Errorf("cannot verify if already exist: %s", err)
 	}
+	// fmt.Println(foundSignature)
 
 	if foundSignature != nil {
 		return fmt.Errorf("already exist")

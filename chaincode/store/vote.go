@@ -19,6 +19,15 @@ func GetVoteStore(stub shim.ChaincodeStubInterface) *VoteStore {
 }
 
 func (s *VoteStore) PutOne(vote *models.Vote) error {
+	foundVote, err := s.GetOneByKey(vote.UniqueKey())
+	if err != nil {
+		return fmt.Errorf("cannot verify if already exist: %s", err)
+	}
+
+	if foundVote != nil {
+		return fmt.Errorf("already exist")
+	}
+
 	return s.store.putOne(vote)
 }
 
