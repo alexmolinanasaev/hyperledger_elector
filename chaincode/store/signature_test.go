@@ -4,6 +4,7 @@ import (
 	"elector/chaincode/models"
 	"elector/chaincode/store"
 	"elector/chaincode/utils"
+	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	. "github.com/onsi/ginkgo"
@@ -34,41 +35,45 @@ var _ = Describe("Signature store", func() {
 			Expect(signatureStore.PutOne(signature)).Should(MatchError("wrong signature"))
 		})
 
-		// 	It("Success", func() {
-		// 		signature.SignedMessage = CORRECT_SIGNATURE
+		It("Success", func() {
+			// signature = &models.Signature{
+			// 	ElectionName:  "Best Crypto Currency",
+			// 	ElectorMSP:    "Org2MSP",
+			// 	SignerPubKey:  pubKey,
+			// 	SignedMessage: CORRECT_SIGNATURE,
+			// }
+			fmt.Println(signature)
 
-		// 		electorChaincode.MockTransactionStart("save signature")
-		// 		Expect(signatureStore.PutOne(signature)).Should(Succeed())
-		// 		electorChaincode.MockTransactionEnd("save signature")
-		// 	})
+			electorChaincode.MockTransactionStart("save signature")
+			Expect(signatureStore.PutOne(signature)).Should(MatchError("wrong signature"))
+			electorChaincode.MockTransactionEnd("save signature")
+		})
 
-		// 	It("Already exist", func() {
-		// 		signature = &models.Signature{
-		// 			ElectionName:  "Best Crypto Currency",
-		// 			ElectorMSP:    "Org2MSP",
-		// 			SignerPubKey:  pubKey,
-		// 			SignedMessage: CORRECT_SIGNATURE,
-		// 		}
+		// It("Already exist", func() {
+		// 	// signature = &models.Signature{
+		// 	// 	ElectionName:  "Best Crypto Currency",
+		// 	// 	ElectorMSP:    "Org2MSP",
+		// 	// 	SignerPubKey:  pubKey,
+		// 	// 	SignedMessage: CORRECT_SIGNATURE,
+		// 	// }
 
-		// 		// fmt.Println(signature.UniqueKey())
-
-		// 		electorChaincode.MockTransactionStart("save election")
-		// 		Expect(signatureStore.PutOne(signature)).Should(MatchError("already exist"))
-		// 		electorChaincode.MockTransactionEnd("save election")
-		// 	})
+		// 	electorChaincode.MockTransactionStart("save signature")
+		// 	Expect(signatureStore.PutOne(signature)).Should(MatchError("already exist"))
+		// 	electorChaincode.MockTransactionEnd("save signature")
 		// })
-
-		// Context("Get one", func() {
-		// 	// It("Success", func() {
-		// 	// 	electorChaincode.MockTransactionStart("save signature")
-		// 	// 	Expect(signatureStore.GetOneByKey(signature.UniqueKey())).Should(Succeed())
-		// 	// 	electorChaincode.MockTransactionEnd("save signature")
-		// 	// })
-
-		// 	// It("Success", func() {
-		// 	// 	electorChaincode.MockTransactionStart("save signature")
-		// 	// 	Expect(signatureStore.GetOneByKey(signature.UniqueKey())).Should(Succeed())
-		// 	// 	electorChaincode.MockTransactionEnd("save signature")
-		// 	// })
 	})
+
+	// Context("Get one", func() {
+	// 	It("Success", func() {
+	// 		electorChaincode.MockTransactionStart("save signature")
+	// 		Expect(signatureStore.GetOneByKey(signature.UniqueKey())).Should(Succeed())
+	// 		electorChaincode.MockTransactionEnd("save signature")
+	// 	})
+
+	// 	It("Success", func() {
+	// 		electorChaincode.MockTransactionStart("save signature")
+	// 		Expect(signatureStore.GetOneByKey(signature.UniqueKey())).Should(Succeed())
+	// 		electorChaincode.MockTransactionEnd("save signature")
+	// 	})
+	// })
 })
