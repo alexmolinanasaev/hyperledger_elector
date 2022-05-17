@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/ecdsa"
 	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -21,14 +22,22 @@ type Signature struct {
 }
 
 func (s *Signature) UniqueKey() string {
-	signatureHashBytes := sha256.Sum256([]byte(s.SignedMessage))
+	if s.MessageHash == nil {
+		signedMessageBytes, err := hex.DecodeString(s.SignedMessage)
+		if err != nil {
+			return "" // чтобы удовлетворять интерфейсу store.storeable м ыпросто вернем пустой ключ
+		}
 
-	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, fmt.Sprintf("%x", signatureHashBytes))
+		signatureHashBytes := sha256.Sum256(signedMessageBytes)
+		s.MessageHash = signatureHashBytes[:]
+	}
+
+	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, fmt.Sprintf("%x", s.MessageHash))
 }
 
 func (s *Signature) Validate() error {
 	// если хэш уже расчитан - не надо выполнять дальнейшую валидацию
-	if len(s.MessageHash) == 32 {
+	if s.MessageHash != nil {
 		return nil
 	}
 
@@ -56,7 +65,12 @@ func (s *Signature) Validate() error {
 		return fmt.Errorf("[INTERNAL] signer pub key not provided")
 	}
 
-	if ok := utils.VerifySignature(s.SignerPubKey, s.HashElectorPayload(), []byte(s.SignedMessage)); !ok {
+	signedMessageBytes, err := hex.DecodeString(s.SignedMessage)
+	if err != nil {
+		return fmt.Errorf("cannot parse signature hex: %s", err)
+	}
+
+	if ok := utils.VerifySignature(s.SignerPubKey, s.HashElectorPayload(), signedMessageBytes); !ok {
 		return fmt.Errorf("wrong signature")
 	}
 

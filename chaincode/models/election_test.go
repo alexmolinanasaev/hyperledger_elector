@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Elector Model", func() {
+var _ = Describe("Election Model", func() {
 	election := &models.Election{}
 
 	Context("Validation", func() {

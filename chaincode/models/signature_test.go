@@ -80,7 +80,7 @@ var _ = Describe("Signature Model", func() {
 				SignedMessage: CORRECT_SIGNATURE,
 			}
 
-			Expect(signature.UniqueKey()).Should(Equal("signature_d1e305a14d060d15ec39056c04d3e5a4902b99118ae337274cb70a17e8d8db1a"))
+			Expect(signature.UniqueKey()).Should(Equal("signature_56d4d3405b22c4ba3dabc2f830accf4ea16b4468c75981f399f555f1f5497fb2"))
 		})
 	})
 })

@@ -1,0 +1,13 @@
+# Tests
+
+With cache
+
+```bash
+go test ./...
+```
+
+Without cache
+
+```bash
+go test ./... -count=1
+```
