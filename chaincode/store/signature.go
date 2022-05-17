@@ -19,6 +19,16 @@ func GetSignatureStore(stub shim.ChaincodeStubInterface) *SignatureStore {
 }
 
 func (s *SignatureStore) PutOne(signature *models.Signature) error {
+	// сигнатура должна пройти 2 стадии валидации
+	// 1) проверка самого содержимого
+	// 2) проверка хэша
+	// это связано с тем, что перед сохранением лишние данные, которые используются для валидации удаляются
+	// перед непосредственных сохранением валидация впринципе не имеет смысла, но она нужна для удовлетворения
+	// алгоритмам общего хранения
+	if err := signature.Validate(); err != nil {
+		return err
+	}
+
 	foundSignature, err := s.GetOneByKey(signature.UniqueKey())
 	if err != nil {
 		return fmt.Errorf("cannot verify if already exist: %s", err)

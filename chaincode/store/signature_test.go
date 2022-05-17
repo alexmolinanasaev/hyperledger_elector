@@ -31,7 +31,7 @@ var _ = Describe("Signature store", func() {
 		It("Signed message validation fail", func() {
 			signature.SignedMessage = WRONG_SIGNATURE
 
-			Expect(signatureStore.PutOne(signature)).Should(MatchError(""))
+			Expect(signatureStore.PutOne(signature)).Should(MatchError("wrong signature"))
 		})
 
 		// 	It("Success", func() {
