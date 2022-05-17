@@ -3,7 +3,6 @@ package store_test
 import (
 	"elector/chaincode/models"
 	"elector/chaincode/store"
-	"elector/chaincode/utils"
 
 	"github.com/hyperledger/fabric-chaincode-go/shimtest"
 	. "github.com/onsi/ginkgo"
@@ -11,62 +10,46 @@ import (
 	"github.com/s7techlab/cckit/examples/cpaper_extended"
 )
 
-var _ = Describe("Signature store", func() {
-	electorChaincode := shimtest.NewMockStub(`signer`, cpaper_extended.NewCC())
+var _ = Describe("Vote store", func() {
+	electorChaincode := shimtest.NewMockStub(`elector`, cpaper_extended.NewCC())
 
-	signatureStore := store.GetSignatureStore(electorChaincode)
+	voteStore := store.GetVoteStore(electorChaincode)
 
-	pubKey, err := utils.ExtractPubKeyFromCert([]byte(ADMIN_PUB_KEY))
-	if err != nil {
-		Fail("cannot extract pub key")
-	}
-
-	signature := &models.Signature{
-		ElectionName:  "Best Crypto Currency",
-		ElectorMSP:    "Org2MSP",
-		SignerPubKey:  pubKey,
-		SignedMessage: WRONG_SIGNATURE,
-	}
-
+	vote := &models.Vote{}
 	Context("Put one", func() {
-		It("Signed message validation fail", func() {
-			Expect(signatureStore.PutOne(signature)).Should(MatchError("wrong signature"))
+		It("Empty fields validation error", func() {
+			Expect(voteStore.PutOne(vote)).Should(MatchError("validation error: current fields are empty: [electionName, candidate]"))
 		})
 
 		It("Success", func() {
-			signature.SignedMessage = CORRECT_SIGNATURE
+			vote.ElectionName = "Best Crypto Currency"
+			vote.Candidate = "BTC"
 
-			electorChaincode.MockTransactionStart("save signature")
-			Expect(signatureStore.PutOne(signature)).Should(Succeed())
-			electorChaincode.MockTransactionEnd("save signature")
+			electorChaincode.MockTransactionStart("save vote")
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+			electorChaincode.MockTransactionEnd("save vote")
 		})
 
 		It("Already exist", func() {
-			electorChaincode.MockTransactionStart("save signature")
-			Expect(signatureStore.PutOne(signature)).Should(MatchError("already exist"))
-			electorChaincode.MockTransactionEnd("save signature")
+			electorChaincode.MockTransactionStart("save vote")
+			Expect(voteStore.PutOne(vote)).Should(MatchError("already exist"))
+			electorChaincode.MockTransactionEnd("save vote")
 		})
 	})
 
 	Context("Get one", func() {
 		It("Not found", func() {
-			electorChaincode.MockTransactionStart("get signature")
-
-			s, err := signatureStore.GetOneByKey("wrongKey")
-			Expect(s).Should(BeNil())
+			electorChaincode.MockTransactionStart("get vote")
+			v, err := voteStore.GetOneByKey("wrongKey")
+			Expect(v).Should(BeNil())
 			Expect(err).Should(BeNil())
-
-			electorChaincode.MockTransactionEnd("get signature")
+			electorChaincode.MockTransactionEnd("get vote")
 		})
 
 		It("Success", func() {
-			s := &models.Signature{
-				MessageHash: signature.MessageHash,
-			}
-
-			electorChaincode.MockTransactionStart("get signature")
-			Expect(signatureStore.GetOneByKey(signature.UniqueKey())).Should(Equal(s))
-			electorChaincode.MockTransactionEnd("get signature")
+			electorChaincode.MockTransactionStart("get vote")
+			Expect(voteStore.GetOneByKey(vote.UniqueKey())).Should(Equal(vote))
+			electorChaincode.MockTransactionEnd("get vote")
 		})
 	})
 })

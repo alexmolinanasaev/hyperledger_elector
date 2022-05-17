@@ -12,7 +12,7 @@ import (
 )
 
 var _ = Describe("Signature store", func() {
-	electorChaincode := shimtest.NewMockStub(`signer`, cpaper_extended.NewCC())
+	electorChaincode := shimtest.NewMockStub(`elector`, cpaper_extended.NewCC())
 
 	signatureStore := store.GetSignatureStore(electorChaincode)
 

@@ -12,7 +12,7 @@ var _ = Describe("Vote Model", func() {
 		vote := &models.Vote{}
 
 		It("Empty fields", func() {
-			Expect(vote.Validate()).Should(MatchError("current fields are empty: [signature, candidate]"))
+			Expect(vote.Validate()).Should(MatchError("current fields are empty: [electionName, candidate]"))
 		})
 	})
 })

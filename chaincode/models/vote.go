@@ -24,6 +24,10 @@ func (v *Vote) Validate() error {
 
 	emptyFields := []string{}
 
+	if v.ElectionName == "" {
+		emptyFields = append(emptyFields, "electionName")
+	}
+
 	if v.Candidate == "" {
 		emptyFields = append(emptyFields, "candidate")
 	}
