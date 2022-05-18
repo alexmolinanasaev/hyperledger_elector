@@ -48,7 +48,7 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) peer.Respo
 	}
 
 	if s != nil {
-		return shim.Error(fmt.Sprintf("signature already used"))
+		return shim.Error("signature already used")
 	}
 
 	vote, err := models.NewVote(election, candidate, stub.GetTxID(), nominations)
@@ -68,14 +68,35 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) peer.Respo
 	return shim.Success(nil)
 }
 
-// func (api *UserAPI) GetResults(ctx contractapi.TransactionContextInterface, electionName string) {
-// 	electionStore := store.GetElectionStore(stub)
+func (api *UserAPI) GetResults(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
+	stub := ctx.GetStub()
 
-// 	election, err := electionStore.GetOneByKey(fmt.Sprintf(models.ELECTION_KEY_TEMPLATE, electionName))
-// 	if err != nil {
-// 		return fmt.Sprintf("election not found: %s", err)
-// 	}
-// }
+	electionStore := store.GetElectionStore(stub)
+
+	election, err := electionStore.GetOneByKey(fmt.Sprintf(models.ELECTION_KEY_TEMPLATE, electionName))
+	if err != nil {
+		return shim.Error(fmt.Sprintf("election not found: %s", err))
+	}
+
+	voteStore := store.GetVoteStore(stub)
+
+	votes, err := voteStore.GetManyByElectionName(electionName)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	votingResults, err := models.CountVotes(election, votes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	votingResultsBytes, err := json.Marshal(votingResults)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(votingResultsBytes)
+}
 
 func (api *UserAPI) GetElection(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
 	electionStore := store.GetElectionStore(ctx.GetStub())
@@ -93,7 +114,18 @@ func (api *UserAPI) GetElection(ctx contractapi.TransactionContextInterface, ele
 	return shim.Success(electionBytes)
 }
 
-func (api *UserAPI) GetVotesCount(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
+func (api *UserAPI) GetVotes(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
+	electionStore := store.GetElectionStore(ctx.GetStub())
+
+	election, err := electionStore.GetOneByKey(fmt.Sprintf(models.ELECTION_KEY_TEMPLATE, electionName))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if !election.Closed {
+		return shim.Error("cannot reveal election votes: election is not closed")
+	}
+
 	voteStore := store.GetVoteStore(ctx.GetStub())
 
 	votes, err := voteStore.GetManyByElectionName(electionName)
@@ -102,6 +134,22 @@ func (api *UserAPI) GetVotesCount(ctx contractapi.TransactionContextInterface, e
 	}
 
 	response, err := json.Marshal(votes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(response)
+}
+
+func (api *UserAPI) GetVotesCount(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
+	voteStore := store.GetVoteStore(ctx.GetStub())
+
+	votes, err := voteStore.GetManyByElectionName(electionName)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	response, err := json.Marshal(len(votes))
 	if err != nil {
 		return shim.Error(err.Error())
 	}

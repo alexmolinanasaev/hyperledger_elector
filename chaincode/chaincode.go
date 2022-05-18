@@ -9,6 +9,5 @@ import (
 type SmartContract struct {
 	contractapi.ContractInterface
 	api.AdminAPI
+	api.UserAPI
 }
-
-type UserAPI struct{}
