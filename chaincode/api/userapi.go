@@ -75,6 +75,10 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) error {
 // 	}
 // }
 
+func (api *UserAPI) GetElection(ctx contractapi.TransactionContextInterface, electionName string) (*models.Election, error) {
+	return nil, nil
+}
+
 func (api *UserAPI) GetVotesCount(ctx contractapi.TransactionContextInterface, electionName string) {
 }
 

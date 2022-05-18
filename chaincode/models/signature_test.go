@@ -72,11 +72,11 @@ var _ = Describe("Signature Model", func() {
 	Context("Unique key", func() {
 		It("Correct unique key", func() {
 			signature := &models.Signature{
-				ElectionName: "Best Crypto Currency",
-				ElectorMSP:   "Org2MSP",
+				ElectionName:  "Best Crypto Currency",
+				SignedMessage: CORRECT_SIGNATURE,
 			}
 
-			Expect(signature.UniqueKey()).Should(Equal("signature_Best Crypto Currency_Org2MSP"))
+			Expect(signature.UniqueKey()).Should(Equal("signature_Best Crypto Currency_3045022100c2b82ac0fcee4ef7bf22ef020b50a6bdfae0354961f9da94b8b818f715b3dc3702207361fd82bff0f8717890bf92662b8771f082137507626b3f70dc66299193a2cd"))
 		})
 	})
 })

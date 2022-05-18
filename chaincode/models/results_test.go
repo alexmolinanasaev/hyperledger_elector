@@ -7,20 +7,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-// election.Name = "Best Crypto Currency"
-// 			election.Candidates = map[string]string{
-// 				"BTC":   "Just HODL it",
-// 				"USDT":  "Stable as democracy",
-// 				"MINA":  "Should be 44!",
-// 				"DOGGY": "Not scam",
-// 			}
-// 			election.Nominations = map[string]string{
-// 				"Most Stable":      "Minimal price jumps",
-// 				"Best Liquidity":   "Biggest capital",
-// 				"Best Perspective": "Coin you shoud HODL",
-// 				"44":               "MINA 44!",
-// 			}
-
 var _ = Describe("Results model", func() {
 	expectedResults := &models.VotingResults{
 		ElectionName: "Best Crypto Currency",
