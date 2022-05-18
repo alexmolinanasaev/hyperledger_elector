@@ -52,4 +52,29 @@ var _ = Describe("Vote store", func() {
 			electorChaincode.MockTransactionEnd("get vote")
 		})
 	})
+
+	Context("Get may", func() {
+		It("Success", func() {
+			electorChaincode.MockTransactionStart("save vote")
+			vote.TxID = "1"
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+			vote.TxID = "2"
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+			vote.TxID = "3"
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+			vote.TxID = "4"
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+			vote.TxID = "5"
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+			vote.TxID = "6"
+			Expect(voteStore.PutOne(vote)).Should(Succeed())
+
+			votes, err := voteStore.GetManyByElectionName("Best Crypto Currency")
+
+			Expect(err).Should(BeNil())
+			Expect(len(votes)).Should(Equal(7))
+
+			electorChaincode.MockTransactionEnd("save vote")
+		})
+	})
 })

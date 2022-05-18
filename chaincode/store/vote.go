@@ -63,3 +63,28 @@ func (s *VoteStore) GetOneByKey(key string) (*models.Vote, error) {
 
 	return result, nil
 }
+
+func (s *VoteStore) GetManyByElectionName(electionName string) ([]*models.Vote, error) {
+	fromKey := fmt.Sprintf(models.VOTE_KEY_TEMPLATE, electionName, "")
+	toKey := fmt.Sprintf(models.VOTE_KEY_TEMPLATE, electionName, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	votesRaw, err := s.store.getByKeyRange(fromKey, toKey)
+
+	if err != nil {
+		return nil, fmt.Errorf("cannot get votes: %s", err)
+	}
+
+	result := make([]*models.Vote, 0)
+
+	for _, v := range votesRaw {
+		vote := &models.Vote{}
+
+		err := json.Unmarshal(v, vote)
+		if err != nil {
+			return nil, fmt.Errorf("cannot unmarshal vote: %s", err)
+		}
+
+		result = append(result, vote)
+	}
+
+	return result, nil
+}

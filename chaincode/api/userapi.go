@@ -7,17 +7,19 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+	"github.com/hyperledger/fabric-protos-go/peer"
 )
 
 type UserAPI struct{}
 
-func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) error {
+func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) peer.Response {
 	stub := ctx.GetStub()
 
 	transient, err := stub.GetTransient()
 	if err != nil {
-		return fmt.Errorf("cannot get transient data: %s", err)
+		return shim.Error(fmt.Sprintf("cannot get transient data: %s", err))
 	}
 
 	electionName, candidate, signedMessage, nominations := api.parseTransient(transient)
@@ -26,7 +28,7 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) error {
 
 	election, err := electionStore.GetOneByKey(fmt.Sprintf(models.ELECTION_KEY_TEMPLATE, electionName))
 	if err != nil {
-		return fmt.Errorf("election not found: %s", err)
+		return shim.Error(fmt.Sprintf("election not found: %s", err))
 	}
 
 	mspID, _ := ctx.GetClientIdentity().GetMSPID()
@@ -36,34 +38,34 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) error {
 
 	signature, err := models.NewSignature(electionName, electorMSP, signedMessage, utils.ADMIN_PUB_KEY)
 	if err != nil {
-		return fmt.Errorf("signature error: %s", err)
+		return shim.Error(fmt.Sprintf("signature error: %s", err))
 	}
 
 	signatureStore := store.GetSignatureStore(stub)
 	s, err := signatureStore.GetOneByKey(signature.UniqueKey())
 	if err != nil {
-		return fmt.Errorf("cannot verify if signature is used: %s", err)
+		return shim.Error(fmt.Sprintf("cannot verify if signature is used: %s", err))
 	}
 
 	if s != nil {
-		return fmt.Errorf("signature already used")
+		return shim.Error(fmt.Sprintf("signature already used"))
 	}
 
-	vote, err := models.NewVote(election, candidate, nominations)
+	vote, err := models.NewVote(election, candidate, stub.GetTxID(), nominations)
 	if err != nil {
-		return err
+		return shim.Error(err.Error())
 	}
 
 	voteStore := store.GetVoteStore(stub)
 	if err := voteStore.PutOne(vote); err != nil {
-		return fmt.Errorf("cannot save vote: %s", err)
+		return shim.Error(fmt.Sprintf("cannot save vote: %s", err))
 	}
 
 	if err := signatureStore.PutOne(signature); err != nil {
-		return fmt.Errorf("cannot save signature: %s", err)
+		return shim.Error(fmt.Sprintf("cannot save signature: %s", err))
 	}
 
-	return nil
+	return shim.Success(nil)
 }
 
 // func (api *UserAPI) GetResults(ctx contractapi.TransactionContextInterface, electionName string) {
@@ -71,15 +73,40 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) error {
 
 // 	election, err := electionStore.GetOneByKey(fmt.Sprintf(models.ELECTION_KEY_TEMPLATE, electionName))
 // 	if err != nil {
-// 		return fmt.Errorf("election not found: %s", err)
+// 		return fmt.Sprintf("election not found: %s", err)
 // 	}
 // }
 
-func (api *UserAPI) GetElection(ctx contractapi.TransactionContextInterface, electionName string) (*models.Election, error) {
-	return nil, nil
+func (api *UserAPI) GetElection(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
+	electionStore := store.GetElectionStore(ctx.GetStub())
+
+	election, err := electionStore.GetOneByKey(fmt.Sprintf(models.ELECTION_KEY_TEMPLATE, electionName))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	electionBytes, err := json.Marshal(election)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(electionBytes)
 }
 
-func (api *UserAPI) GetVotesCount(ctx contractapi.TransactionContextInterface, electionName string) {
+func (api *UserAPI) GetVotesCount(ctx contractapi.TransactionContextInterface, electionName string) peer.Response {
+	voteStore := store.GetVoteStore(ctx.GetStub())
+
+	votes, err := voteStore.GetManyByElectionName(electionName)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	response, err := json.Marshal(votes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(response)
 }
 
 func (api *UserAPI) parseTransient(transient map[string][]byte) (string, string, string, map[string]string) {

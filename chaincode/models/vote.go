@@ -5,14 +5,15 @@ import (
 	"strings"
 )
 
-// Vote_<Vote.Election.Name>
-const VOTE_KEY_TEMPLATE = "vote_%s"
+// Vote_<Vote.ElectionName>_<Vote.TxID>
+const VOTE_KEY_TEMPLATE = "vote_%s_%s"
 
-func NewVote(election *Election, candidate string, nominations map[string]string) (*Vote, error) {
+func NewVote(election *Election, candidate, txID string, nominations map[string]string) (*Vote, error) {
 	vote := &Vote{
 		ElectionName: election.Name,
 		Candidate:    candidate,
 		Nominations:  nominations,
+		TxID:         txID,
 	}
 
 	if err := vote.Validate(); err != nil {
@@ -31,10 +32,11 @@ type Vote struct {
 	Candidate    string `json:"candidate"`
 	// nomination => nominated
 	Nominations map[string]string `json:"nominations"`
+	TxID        string            `json:"txID"`
 }
 
 func (v *Vote) UniqueKey() string {
-	return fmt.Sprintf(VOTE_KEY_TEMPLATE, v.ElectionName)
+	return fmt.Sprintf(VOTE_KEY_TEMPLATE, v.ElectionName, v.TxID)
 }
 
 func (v *Vote) Validate() error {

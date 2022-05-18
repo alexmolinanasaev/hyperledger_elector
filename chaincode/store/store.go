@@ -48,3 +48,24 @@ func (s *store) putMany(data []storeable) error {
 func (s *store) getOneByKey(key string) ([]byte, error) {
 	return s.stub.GetState(key)
 }
+
+func (s *store) getByKeyRange(startKey, endKey string) ([][]byte, error) {
+	resultsIterator, err := s.stub.GetStateByRange(startKey, endKey)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	results := make([][]byte, 0)
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, queryResponse.Value)
+	}
+
+	return results, nil
+}
