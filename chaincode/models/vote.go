@@ -8,6 +8,24 @@ import (
 // Vote_<Vote.Election.Name>
 const VOTE_KEY_TEMPLATE = "vote_%s"
 
+func NewVote(election *Election, candidate string, nominations map[string]string) (*Vote, error) {
+	vote := &Vote{
+		ElectionName: election.Name,
+		Candidate:    candidate,
+		Nominations:  nominations,
+	}
+
+	if err := vote.Validate(); err != nil {
+		return nil, fmt.Errorf("validation error: %s", err)
+	}
+
+	if err := vote.postValidate(election); err != nil {
+		return nil, fmt.Errorf("validation error: %s", err)
+	}
+
+	return vote, nil
+}
+
 type Vote struct {
 	ElectionName string `json:"electionName"`
 	Candidate    string `json:"candidate"`
@@ -39,4 +57,18 @@ func (v *Vote) Validate() error {
 	return nil
 }
 
-// TODO: сделать проверку того, что в голосе нет голосований, или кандидатов, которых нет в выборе
+// postValidate проверяет существует ли кандидат в текущем голосовании,
+// а так же удаляет все номинации, которые не входят в голосовании
+func (v *Vote) postValidate(election *Election) error {
+	if _, ok := election.Candidates[v.Candidate]; !ok {
+		return fmt.Errorf("vote candidate is not included in election")
+	}
+
+	for k := range v.Nominations {
+		if _, ok := election.Nominations[k]; !ok {
+			delete(v.Nominations, k)
+		}
+	}
+
+	return nil
+}

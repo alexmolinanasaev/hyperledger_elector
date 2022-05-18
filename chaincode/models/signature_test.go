@@ -53,11 +53,8 @@ var _ = Describe("Signature Model", func() {
 		})
 
 		It("Correct signature", func() {
-			signature.ElectionName = "Best Crypto Currency"
-			signature.ElectorMSP = "Org2MSP"
-			signature.SignedMessage = CORRECT_SIGNATURE
-
-			Expect(signature.Validate()).Should(Succeed())
+			s, _ := models.NewSignature("Best Crypto Currency", "Org2MSP", CORRECT_SIGNATURE, ADMIN_PUB_KEY)
+			Expect(s.Validate()).Should(Succeed())
 		})
 	})
 

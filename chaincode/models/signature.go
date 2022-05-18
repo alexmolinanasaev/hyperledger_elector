@@ -13,6 +13,26 @@ import (
 // signature_<Signature.SignedMessage(sha256 hex)>
 const SIGNATURE_KEY_TEMPLATE = "signature_%s"
 
+func NewSignature(electionName, electorMSP, signedMessage, pubK string) (*Signature, error) {
+	pubKey, err := utils.ExtractPubKeyFromCert([]byte(pubK))
+	if err != nil {
+		return nil, fmt.Errorf("[INTERNAL] cannot decode admin pub key")
+	}
+
+	signature := &Signature{
+		ElectionName:  electionName,
+		ElectorMSP:    electorMSP,
+		SignedMessage: signedMessage,
+		SignerPubKey:  pubKey,
+	}
+
+	if err := signature.Validate(); err != nil {
+		return nil, fmt.Errorf("validation error: %s", err)
+	}
+
+	return signature, nil
+}
+
 type Signature struct {
 	ElectionName  string `json:"electionName,omitempty"`
 	ElectorMSP    string `json:"electorMSP,omitempty"`
@@ -36,11 +56,6 @@ func (s *Signature) UniqueKey() string {
 }
 
 func (s *Signature) Validate() error {
-	// если хэш уже расчитан - не надо выполнять дальнейшую валидацию
-	if s.MessageHash != nil {
-		return nil
-	}
-
 	errMsgTemplate := "current fields are empty: [%s]"
 
 	emptyFields := []string{}

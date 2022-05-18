@@ -8,9 +8,26 @@ import (
 // election_<Election.Name>
 const ELECTION_KEY_TEMPLATE = "election_%s"
 
+func NewElection(name string, candidates, nominations map[string]string) (*Election, error) {
+	election := &Election{
+		Name:        name,
+		Candidates:  candidates,
+		Nominations: nominations,
+		Closed:      false,
+	}
+
+	if err := election.Validate(); err != nil {
+		return nil, fmt.Errorf("validation error: %s", err)
+	}
+
+	return election, nil
+}
+
 type Election struct {
-	Name        string            `json:"name"`
-	Candidates  map[string]string `json:"candidates"`
+	Name string `json:"name"`
+	// candidate => description
+	Candidates map[string]string `json:"candidates"`
+	// nomination => description
 	Nominations map[string]string `json:"nominations"`
 	Closed      bool              `json:"closed"`
 }

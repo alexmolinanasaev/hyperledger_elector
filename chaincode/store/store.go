@@ -9,7 +9,6 @@ import (
 
 type storeable interface {
 	UniqueKey() string
-	Validate() error
 }
 
 type store struct {
@@ -23,11 +22,6 @@ func getStore(stub shim.ChaincodeStubInterface) *store {
 }
 
 func (s *store) putOne(data storeable) error {
-	err := data.Validate()
-	if err != nil {
-		return fmt.Errorf("validation error: %s", err)
-	}
-
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("cannot marshal data: %s", err)

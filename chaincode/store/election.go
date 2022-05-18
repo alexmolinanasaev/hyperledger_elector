@@ -19,6 +19,10 @@ func GetElectionStore(stub shim.ChaincodeStubInterface) *ElectionStore {
 }
 
 func (s *ElectionStore) PutOne(election *models.Election) error {
+	if err := election.Validate(); err != nil {
+		return fmt.Errorf("validation error: %s", err)
+	}
+
 	// нельзя вставить голосование если такое уже есть
 	foundElection, err := s.GetOneByKey(election.UniqueKey())
 	if err != nil {

@@ -8,7 +8,8 @@ import (
 
 type AdminAPI struct{}
 
-func (api *AdminAPI) NewElection(ctx contractapi.TransactionContextInterface, election models.Election) error {
+func (api *AdminAPI) NewElection(ctx contractapi.TransactionContextInterface, name string, candidates, nominations map[string]string) error {
+	election, err := models.NewElection(name, candidates, nominations)
 	return nil
 }
 
