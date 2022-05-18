@@ -38,10 +38,10 @@ func (s *ElectionStore) PutOne(election *models.Election) error {
 	return s.store.putOne(election)
 }
 
-func (s *ElectionStore) CloseElection(election *models.Election) error {
+func (s *ElectionStore) CloseElectionByKey(key string) error {
 	// сущность голосования нельзя изменить после создания. Голосование можно только закрыть
 	// если закрываемое голосование не существует, то и закрыть мы не можем
-	foundElection, err := s.GetOneByKey(election.UniqueKey())
+	foundElection, err := s.GetOneByKey(key)
 	if err != nil || foundElection == nil {
 		return fmt.Errorf("non existent election cannot be closed")
 	}
@@ -49,8 +49,6 @@ func (s *ElectionStore) CloseElection(election *models.Election) error {
 	if err := foundElection.Close(); err != nil {
 		return err
 	}
-
-	election.Close()
 
 	return s.store.putOne(foundElection)
 }

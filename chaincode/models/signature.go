@@ -2,7 +2,6 @@ package models
 
 import (
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -10,8 +9,8 @@ import (
 	"elector/chaincode/utils"
 )
 
-// signature_<Signature.SignedMessage(sha256 hex)>
-const SIGNATURE_KEY_TEMPLATE = "signature_%s"
+// signature_<Signature.electionName>_<Signature.ElectorMSP>
+const SIGNATURE_KEY_TEMPLATE = "signature_%s_%s"
 
 func NewSignature(electionName, electorMSP, signedMessage, pubK string) (*Signature, error) {
 	pubKey, err := utils.ExtractPubKeyFromCert([]byte(pubK))
@@ -34,25 +33,14 @@ func NewSignature(electionName, electorMSP, signedMessage, pubK string) (*Signat
 }
 
 type Signature struct {
-	ElectionName  string `json:"electionName,omitempty"`
-	ElectorMSP    string `json:"electorMSP,omitempty"`
+	ElectionName  string `json:"electionName"`
+	ElectorMSP    string `json:"electorMSP"`
 	SignedMessage string `json:"signedMessage"`
-	MessageHash   []byte `json:"messageHash"`
 	SignerPubKey  *ecdsa.PublicKey
 }
 
 func (s *Signature) UniqueKey() string {
-	if s.MessageHash == nil {
-		signedMessageBytes, err := hex.DecodeString(s.SignedMessage)
-		if err != nil {
-			return "" // чтобы удовлетворять интерфейсу store.storeable м ыпросто вернем пустой ключ
-		}
-
-		signatureHashBytes := sha256.Sum256(signedMessageBytes)
-		s.MessageHash = signatureHashBytes[:]
-	}
-
-	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, fmt.Sprintf("%x", s.MessageHash))
+	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, s.ElectionName, s.ElectorMSP)
 }
 
 func (s *Signature) Validate() error {
@@ -93,12 +81,5 @@ func (s *Signature) Validate() error {
 }
 
 func (s *Signature) HashElectorPayload() []byte {
-	// если хэш уже расчитан - просто возвращаем его
-	if s.MessageHash != nil {
-		return s.MessageHash
-	}
-
-	s.MessageHash = utils.HashElectorPayload(s.ElectionName, s.ElectorMSP)
-
-	return s.MessageHash
+	return utils.HashElectorPayload(s.ElectionName, s.ElectorMSP)
 }

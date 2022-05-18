@@ -27,17 +27,18 @@ func (s *SignatureStore) PutOne(signature *models.Signature) error {
 	if err != nil {
 		return fmt.Errorf("cannot verify if already exist: %s", err)
 	}
-	// fmt.Println(foundSignature)
 
 	if foundSignature != nil {
 		return fmt.Errorf("already exist")
 	}
 
-	messageHash := &models.Signature{
-		MessageHash: signature.HashElectorPayload(),
+	sig := &models.Signature{
+		ElectionName:  signature.ElectionName,
+		ElectorMSP:    signature.ElectorMSP,
+		SignedMessage: signature.SignedMessage,
 	}
 
-	return s.store.putOne(messageHash)
+	return s.store.putOne(sig)
 }
 
 func (s *SignatureStore) PutMany(signature []*models.Signature) error {

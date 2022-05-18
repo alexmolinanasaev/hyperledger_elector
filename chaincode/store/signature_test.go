@@ -61,7 +61,9 @@ var _ = Describe("Signature store", func() {
 
 		It("Success", func() {
 			s := &models.Signature{
-				MessageHash: signature.MessageHash,
+				ElectionName:  "Best Crypto Currency",
+				ElectorMSP:    "Org2MSP",
+				SignedMessage: CORRECT_SIGNATURE,
 			}
 
 			electorChaincode.MockTransactionStart("get signature")

@@ -71,13 +71,13 @@ var _ = Describe("Election store", func() {
 	Context("Close", func() {
 		It("Success", func() {
 			electorChaincode.MockTransactionStart("close election")
-			Expect(electionStore.CloseElection(election)).Should(Succeed())
+			Expect(electionStore.CloseElectionByKey(election.UniqueKey())).Should(Succeed())
 			electorChaincode.MockTransactionEnd("close election")
 		})
 
 		It("Already closed", func() {
 			electorChaincode.MockTransactionStart("close election")
-			Expect(electionStore.CloseElection(election)).Should(MatchError("already closed"))
+			Expect(electionStore.CloseElectionByKey(election.UniqueKey())).Should(MatchError("already closed"))
 			electorChaincode.MockTransactionEnd("close election")
 		})
 
@@ -88,11 +88,12 @@ var _ = Describe("Election store", func() {
 			}
 
 			electorChaincode.MockTransactionStart("close election")
-			Expect(electionStore.CloseElection(e)).Should(MatchError("non existent election cannot be closed"))
+			Expect(electionStore.CloseElectionByKey(e.UniqueKey())).Should(MatchError("non existent election cannot be closed"))
 			electorChaincode.MockTransactionEnd("close election")
 		})
 
 		It("Closing election does not mumate other fields", func() {
+			election.Closed = true
 			Expect(electionStore.GetOneByKey(election.UniqueKey())).Should(Equal(election))
 		})
 	})
