@@ -9,10 +9,10 @@ import (
 const ELECTION_KEY_TEMPLATE = "election_%s"
 
 type Election struct {
-	Name        string   `json:"name"`
-	Candidates  []string `json:"candidates"`
-	Nominations []string `json:"nominations"`
-	Closed      bool     `json:"closed"`
+	Name        string            `json:"name"`
+	Candidates  map[string]string `json:"candidates"`
+	Nominations map[string]string `json:"nominations"`
+	Closed      bool              `json:"closed"`
 }
 
 func (e *Election) UniqueKey() string {
@@ -32,11 +32,11 @@ func (e *Election) Validate() error {
 		emptyFields = append(emptyFields, "candidates")
 	}
 
+	// в голосовании могут отсутствовать номинации
+
 	if len(emptyFields) != 0 {
 		return fmt.Errorf(errMsgTemplate, strings.Join(emptyFields, ", "))
 	}
-
-	// в голосовании могут отсутствовать номинации
 
 	return nil
 }

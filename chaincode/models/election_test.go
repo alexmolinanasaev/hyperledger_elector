@@ -17,8 +17,18 @@ var _ = Describe("Election Model", func() {
 
 		It("Success", func() {
 			election.Name = "Best Crypto Currency"
-			election.Candidates = []string{"BTC", "USDT", "MINA", "DOGGY"}
-			election.Nominations = []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"}
+			election.Candidates = map[string]string{
+				"BTC":   "Just HODL it",
+				"USDT":  "Stable as democracy",
+				"MINA":  "Should be 44!",
+				"DOGGY": "Not scam",
+			}
+			election.Nominations = map[string]string{
+				"Most Stable":      "Minimal price jumps",
+				"Best Liquidity":   "Biggest capital",
+				"Best Perspective": "Coin you shoud HODL",
+				"44":               "MINA 44!",
+			}
 
 			Expect(election.Validate()).Should(Succeed())
 		})

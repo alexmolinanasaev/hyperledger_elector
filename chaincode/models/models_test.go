@@ -27,7 +27,7 @@ BAMCA0gAMEUCIQC0cwSVvkx8oTh/87dERe7lnYDl5ZPyBuyBA5dSWs7s/AIgR889
 qwRxuMGZG6KsLXw4P9zdFccUKEIIweVuOMkO1J0=
 -----END CERTIFICATE-----`
 
-// TODO: приватный ключ от захардкоженного выше. ПОка пускай тут полежит
+// TODO: приватный ключ от захардкоженного выше. Пока пускай тут полежит
 // пока только для тестов
 const ADMIN_PRIV_KEY string = `-----BEGIN PRIVATE KEY-----
 MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgKbFeJ8Dpu10b4+wA

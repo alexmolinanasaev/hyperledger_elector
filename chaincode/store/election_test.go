@@ -25,9 +25,17 @@ var _ = Describe("Election store", func() {
 
 		It("Success", func() {
 			election = &models.Election{
-				Name:        "Best Crypto Currency",
-				Candidates:  []string{"BTC", "USDT", "MINA", "DOGGY"},
-				Nominations: []string{"Most Stable", "Best Liquidity", "Best Perspective", "44"},
+				Name: "Best Crypto Currency",
+				Candidates: map[string]string{
+					"BTC":   "Just HODL it",
+					"USDT":  "Stable as democracy",
+					"MINA":  "Should be 44!",
+					"DOGGY": "Not scam"},
+				Nominations: map[string]string{
+					"Most Stable":      "Minimal price jumps",
+					"Best Liquidity":   "Biggest capital",
+					"Best Perspective": "Coin you shoud HODL",
+					"44":               "MINA 44!"},
 			}
 
 			electorChaincode.MockTransactionStart("save election")
@@ -76,7 +84,7 @@ var _ = Describe("Election store", func() {
 		It("Closing non existent election", func() {
 			e := &models.Election{
 				Name:       "non existent",
-				Candidates: []string{"1"},
+				Candidates: map[string]string{"1": "1"},
 			}
 
 			electorChaincode.MockTransactionStart("close election")
