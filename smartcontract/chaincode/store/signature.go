@@ -35,6 +35,7 @@ func (s *SignatureStore) PutOne(signature *models.Signature) error {
 	sig := &models.Signature{
 		ElectionName:  signature.ElectionName,
 		SignedMessage: signature.SignedMessage,
+		ElectorMSP:    signature.ElectorMSP,
 	}
 
 	return s.store.putOne(sig)

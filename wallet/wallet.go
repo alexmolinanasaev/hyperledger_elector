@@ -6,10 +6,12 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
+	"elector/chaincode/utils"
 	"encoding/asn1"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 )
 
@@ -36,15 +38,6 @@ MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgKbFeJ8Dpu10b4+wA
 Qs2F2f879ETRngZtGdO2wNO5cITWeh7ViB44UV25CmDOIuPXLW5wsSkv
 -----END PRIVATE KEY-----`
 
-func GetAdminPub() *ecdsa.PublicKey {
-	ExtractPubKeyFromCert([]byte(ADMIN_PUB_KEY))
-	return &ecdsa.PublicKey{}
-}
-
-func VerifySignature(pub *ecdsa.PublicKey, hash []byte, sig []byte) bool {
-	return ecdsa.VerifyASN1(pub, hash, sig)
-}
-
 func ExtractPubKeyFromCert(certPEM []byte) (*ecdsa.PublicKey, error) {
 	block, _ := pem.Decode(certPEM)
 	if block == nil || block.Type != "CERTIFICATE" {
@@ -57,8 +50,52 @@ func ExtractPubKeyFromCert(certPEM []byte) (*ecdsa.PublicKey, error) {
 	return cert.PublicKey.(*ecdsa.PublicKey), nil
 }
 
+func GetAdminPub() *ecdsa.PublicKey {
+	ExtractPubKeyFromCert([]byte(ADMIN_PUB_KEY))
+	return &ecdsa.PublicKey{}
+}
+
 type Signer struct {
 	priv *ecdsa.PrivateKey
+}
+
+func (s *Signer) SignElectorPayload(electionName, electorMSP string) ([]byte, error) {
+	sig, err := ecdsa.SignASN1(rand.Reader, s.priv, utils.HashElectorPayload(electionName, electorMSP))
+	if err != nil {
+		return nil, err
+	}
+
+	return SignatureToLowS(&s.priv.PublicKey, sig)
+}
+
+// TODO: пока только для теста
+func SignTestMessage() {
+	signer, err := NewSigner([]byte(ADMIN_PRIV_KEY))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	signature, err := signer.SignElectorPayload("Best Crypto Currency", "Org2MSP")
+	if err != nil {
+		log.Panic(err)
+	}
+
+	pub, err := ExtractPubKeyFromCert([]byte(ADMIN_PUB_KEY))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	payload := utils.HashElectorPayload("Best Crypto Currency", "Org2MSP")
+
+	ok := utils.VerifySignature(pub, payload, signature)
+	fmt.Println(ok)
+
+	signatureHex := fmt.Sprintf("%x", signature)
+	signatureHashBytes := sha256.Sum256([]byte(signatureHex))
+	signatureHashHex := fmt.Sprintf("%x", signatureHashBytes[:])
+
+	fmt.Println(signatureHashHex)
+	fmt.Println(signatureHex)
 }
 
 func NewSigner(skPEM []byte) (*Signer, error) {
@@ -80,25 +117,6 @@ func NewSigner(skPEM []byte) (*Signer, error) {
 	return &Signer{
 		priv: priv,
 	}, nil
-}
-
-func (s *Signer) SignElectorPayload(electionName, electorMSP string) ([]byte, error) {
-	sig, err := ecdsa.SignASN1(rand.Reader, s.priv, HashElectorPayload(electionName, electorMSP))
-	if err != nil {
-		return nil, err
-	}
-
-	return SignatureToLowS(&s.priv.PublicKey, sig)
-}
-
-func HashElectorPayload(electionName, electorMSP string) []byte {
-	// ElectionName.ElectorMSP
-	messageHash := "%s.%s"
-	messageHash = fmt.Sprintf(messageHash, electionName, electorMSP)
-
-	hashBytes := sha256.Sum256([]byte(messageHash))
-
-	return hashBytes[:]
 }
 
 type ECDSASignature struct {

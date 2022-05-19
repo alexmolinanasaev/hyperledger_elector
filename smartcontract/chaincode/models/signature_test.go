@@ -37,6 +37,7 @@ var _ = Describe("Signature Model", func() {
 
 		It("Wrong election name", func() {
 			signature.ElectionName = "Worst Crypto Currency"
+			signature.ElectorMSP = "Org2MSP"
 			signature.SignedMessage = CORRECT_SIGNATURE
 
 			Expect(signature.Validate()).Should(MatchError("wrong signature"))
@@ -76,7 +77,7 @@ var _ = Describe("Signature Model", func() {
 				SignedMessage: CORRECT_SIGNATURE,
 			}
 
-			Expect(signature.UniqueKey()).Should(Equal("signature_Best Crypto Currency_3045022100c2b82ac0fcee4ef7bf22ef020b50a6bdfae0354961f9da94b8b818f715b3dc3702207361fd82bff0f8717890bf92662b8771f082137507626b3f70dc66299193a2cd"))
+			Expect(signature.UniqueKey()).Should(Equal("signature_Best Crypto Currency_89be4b7940344c5d1febebc5fdf73b100c749c025f7c3bc8bfa880d5852017b2"))
 		})
 	})
 })

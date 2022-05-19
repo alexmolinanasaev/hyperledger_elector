@@ -62,6 +62,7 @@ var _ = Describe("Signature store", func() {
 		It("Success", func() {
 			s := &models.Signature{
 				ElectionName:  "Best Crypto Currency",
+				ElectorMSP:    "Org2MSP",
 				SignedMessage: CORRECT_SIGNATURE,
 			}
 

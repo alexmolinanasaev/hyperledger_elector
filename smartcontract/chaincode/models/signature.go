@@ -9,7 +9,7 @@ import (
 	"elector/chaincode/utils"
 )
 
-// signature_<Signature.electionName>_<Signature.SignedMessage>
+// signature_<Signature.electionName>_<Signature.ElectorMSP(sha256 hex)>
 const SIGNATURE_KEY_TEMPLATE = "signature_%s_%s"
 
 func NewSignature(electionName, electorMSP, signedMessage, pubK string) (*Signature, error) {
@@ -34,13 +34,13 @@ func NewSignature(electionName, electorMSP, signedMessage, pubK string) (*Signat
 
 type Signature struct {
 	ElectionName  string `json:"electionName"`
-	ElectorMSP    string `json:"electorMSP,omitempty"`
+	ElectorMSP    string `json:"electorMSP"`
 	SignedMessage string `json:"signedMessage"`
 	SignerPubKey  *ecdsa.PublicKey
 }
 
 func (s *Signature) UniqueKey() string {
-	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, s.ElectionName, s.SignedMessage)
+	return fmt.Sprintf(SIGNATURE_KEY_TEMPLATE, s.ElectionName, fmt.Sprintf("%x", s.HashElectorPayload()))
 }
 
 func (s *Signature) Validate() error {
