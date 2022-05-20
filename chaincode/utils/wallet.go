@@ -6,7 +6,6 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
-	"elector/chaincode/utils"
 	"encoding/asn1"
 	"encoding/pem"
 	"errors"
@@ -15,20 +14,22 @@ import (
 	"math/big"
 )
 
-const ADMIN_PUB_KEY string = `-----BEGIN CERTIFICATE-----
-MIICKTCCAc+gAwIBAgIQTUFZM0uHkjSVzbXSGfdXAjAKBggqhkjOPQQDAjBzMQsw
-CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy
-YW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eu
-b3JnMS5leGFtcGxlLmNvbTAeFw0yMjA1MTUxMTI2MDBaFw0zMjA1MTIxMTI2MDBa
-MGsxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1T
-YW4gRnJhbmNpc2NvMQ4wDAYDVQQLEwVhZG1pbjEfMB0GA1UEAwwWQWRtaW5Ab3Jn
-MS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCVcwwpmCcxU
-oAdwCBJPr3kBaNPGpqFCzYXZ/zv0RNGeBm0Z07bA07lwhNZ6HtWIHjhRXbkKYM4i
-49ctbnCxKS+jTTBLMA4GA1UdDwEB/wQEAwIHgDAMBgNVHRMBAf8EAjAAMCsGA1Ud
-IwQkMCKAIJfLMIp/JAvDlsfhsnFqpClhPpt0IVJwFlZkSnh13wxcMAoGCCqGSM49
-BAMCA0gAMEUCIQC0cwSVvkx8oTh/87dERe7lnYDl5ZPyBuyBA5dSWs7s/AIgR889
-qwRxuMGZG6KsLXw4P9zdFccUKEIIweVuOMkO1J0=
------END CERTIFICATE-----`
+const ELECTOR1_MSP = "Org1MSP.eDUwOTo6Q049VXNlcjFAb3JnMS5leGFtcGxlLmNvbSxPVT1jbGllbnQsTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUzo6Q049Y2Eub3JnMS5leGFtcGxlLmNvbSxPPW9yZzEuZXhhbXBsZS5jb20sTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUw=="
+
+// const ADMIN_PUB_KEY string = `-----BEGIN CERTIFICATE-----
+// MIICKTCCAc+gAwIBAgIQTUFZM0uHkjSVzbXSGfdXAjAKBggqhkjOPQQDAjBzMQsw
+// CQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNU2FuIEZy
+// YW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEcMBoGA1UEAxMTY2Eu
+// b3JnMS5leGFtcGxlLmNvbTAeFw0yMjA1MTUxMTI2MDBaFw0zMjA1MTIxMTI2MDBa
+// MGsxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQHEw1T
+// YW4gRnJhbmNpc2NvMQ4wDAYDVQQLEwVhZG1pbjEfMB0GA1UEAwwWQWRtaW5Ab3Jn
+// MS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCVcwwpmCcxU
+// oAdwCBJPr3kBaNPGpqFCzYXZ/zv0RNGeBm0Z07bA07lwhNZ6HtWIHjhRXbkKYM4i
+// 49ctbnCxKS+jTTBLMA4GA1UdDwEB/wQEAwIHgDAMBgNVHRMBAf8EAjAAMCsGA1Ud
+// IwQkMCKAIJfLMIp/JAvDlsfhsnFqpClhPpt0IVJwFlZkSnh13wxcMAoGCCqGSM49
+// BAMCA0gAMEUCIQC0cwSVvkx8oTh/87dERe7lnYDl5ZPyBuyBA5dSWs7s/AIgR889
+// qwRxuMGZG6KsLXw4P9zdFccUKEIIweVuOMkO1J0=
+// -----END CERTIFICATE-----`
 
 // TODO: приватный ключ от захардкоженного выше. ПОка пускай тут полежит
 // пока только для тестов
@@ -38,17 +39,17 @@ MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgKbFeJ8Dpu10b4+wA
 Qs2F2f879ETRngZtGdO2wNO5cITWeh7ViB44UV25CmDOIuPXLW5wsSkv
 -----END PRIVATE KEY-----`
 
-func ExtractPubKeyFromCert(certPEM []byte) (*ecdsa.PublicKey, error) {
-	block, _ := pem.Decode(certPEM)
-	if block == nil || block.Type != "CERTIFICATE" {
-		return nil, fmt.Errorf("failed to parse certificate PEM")
-	}
-	cert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-	return cert.PublicKey.(*ecdsa.PublicKey), nil
-}
+// func ExtractPubKeyFromCert(certPEM []byte) (*ecdsa.PublicKey, error) {
+// 	block, _ := pem.Decode(certPEM)
+// 	if block == nil || block.Type != "CERTIFICATE" {
+// 		return nil, fmt.Errorf("failed to parse certificate PEM")
+// 	}
+// 	cert, err := x509.ParseCertificate(block.Bytes)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return cert.PublicKey.(*ecdsa.PublicKey), nil
+// }
 
 func GetAdminPub() *ecdsa.PublicKey {
 	ExtractPubKeyFromCert([]byte(ADMIN_PUB_KEY))
@@ -60,7 +61,7 @@ type Signer struct {
 }
 
 func (s *Signer) SignElectorPayload(electionName, electorMSP string) ([]byte, error) {
-	sig, err := ecdsa.SignASN1(rand.Reader, s.priv, utils.HashElectorPayload(electionName, electorMSP))
+	sig, err := ecdsa.SignASN1(rand.Reader, s.priv, HashElectorPayload(electionName, electorMSP))
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +76,7 @@ func SignTestMessage() {
 		log.Panic(err)
 	}
 
-	signature, err := signer.SignElectorPayload("Best Crypto Currency", "Org2MSP")
+	signature, err := signer.SignElectorPayload("Best Crypto Currency", ELECTOR1_MSP)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -85,17 +86,17 @@ func SignTestMessage() {
 		log.Panic(err)
 	}
 
-	payload := utils.HashElectorPayload("Best Crypto Currency", "Org2MSP")
+	payload := HashElectorPayload("Best Crypto Currency", ELECTOR1_MSP)
 
-	ok := utils.VerifySignature(pub, payload, signature)
+	ok := VerifySignature(pub, payload, signature)
 	fmt.Println(ok)
 
 	signatureHex := fmt.Sprintf("%x", signature)
 	signatureHashBytes := sha256.Sum256([]byte(signatureHex))
 	signatureHashHex := fmt.Sprintf("%x", signatureHashBytes[:])
 
-	fmt.Println(signatureHashHex)
-	fmt.Println(signatureHex)
+	fmt.Println("signatureHashHex = ", signatureHashHex)
+	fmt.Println("signatureHex = ", signatureHex)
 }
 
 func NewSigner(skPEM []byte) (*Signer, error) {

@@ -18,7 +18,7 @@ var _ = Describe("Signature Model", func() {
 
 		It("No pub key", func() {
 			signature.ElectionName = "Best Crypto Currency"
-			signature.ElectorMSP = "Org2MSP"
+			signature.ElectorMSP = "Org2MSP.eDUwOTo6Q049VXNlcjFAb3JnMS5leGFtcGxlLmNvbSxPVT1jbGllbnQsTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUzo6Q049Y2Eub3JnMS5leGFtcGxlLmNvbSxPPW9yZzEuZXhhbXBsZS5jb20sTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUw"
 			signature.SignedMessage = WRONG_SIGNATURE
 
 			Expect(signature.Validate()).Should(MatchError("[INTERNAL] signer pub key not provided"))
@@ -37,8 +37,8 @@ var _ = Describe("Signature Model", func() {
 
 		It("Wrong election name", func() {
 			signature.ElectionName = "Worst Crypto Currency"
-			signature.ElectorMSP = "Org2MSP"
-			signature.SignedMessage = CORRECT_SIGNATURE
+			signature.ElectorMSP = "Org2MSP.eDUwOTo6Q049VXNlcjFAb3JnMS5leGFtcGxlLmNvbSxPVT1jbGllbnQsTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUzo6Q049Y2Eub3JnMS5leGFtcGxlLmNvbSxPPW9yZzEuZXhhbXBsZS5jb20sTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUw"
+			signature.SignedMessage = ELECTOR1_CORRECT_SIGNATURE
 
 			Expect(signature.Validate()).Should(MatchError("wrong signature"))
 		})
@@ -46,13 +46,14 @@ var _ = Describe("Signature Model", func() {
 		It("Wrong elector MSP", func() {
 			signature.ElectionName = "Best Crypto Currency"
 			signature.ElectorMSP = "Org3MSP"
-			signature.SignedMessage = CORRECT_SIGNATURE
+			signature.SignedMessage = ELECTOR1_CORRECT_SIGNATURE
 
 			Expect(signature.Validate()).Should(MatchError("wrong signature"))
 		})
 
 		It("Correct signature", func() {
-			s, _ := models.NewSignature("Best Crypto Currency", "Org2MSP", CORRECT_SIGNATURE, ADMIN_PUB_KEY)
+			s, err := models.NewSignature("Best Crypto Currency", ELECTOR1_MSP, ELECTOR1_CORRECT_SIGNATURE, ADMIN_PUB_KEY)
+			Expect(err).Should(BeNil())
 			Expect(s.Validate()).Should(Succeed())
 		})
 	})
@@ -74,7 +75,7 @@ var _ = Describe("Signature Model", func() {
 		It("Correct unique key", func() {
 			signature := &models.Signature{
 				ElectionName:  "Best Crypto Currency",
-				SignedMessage: CORRECT_SIGNATURE,
+				SignedMessage: ELECTOR1_CORRECT_SIGNATURE,
 			}
 
 			Expect(signature.UniqueKey()).Should(Equal("signature_Best Crypto Currency_89be4b7940344c5d1febebc5fdf73b100c749c025f7c3bc8bfa880d5852017b2"))

@@ -31,6 +31,7 @@ func (s *store) putOne(data storeable) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

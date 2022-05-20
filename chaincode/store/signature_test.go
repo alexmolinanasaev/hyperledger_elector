@@ -23,7 +23,7 @@ var _ = Describe("Signature store", func() {
 
 	signature := &models.Signature{
 		ElectionName:  "Best Crypto Currency",
-		ElectorMSP:    "Org2MSP",
+		ElectorMSP:    ELECTOR1_MSP,
 		SignerPubKey:  pubKey,
 		SignedMessage: WRONG_SIGNATURE,
 	}
@@ -34,7 +34,7 @@ var _ = Describe("Signature store", func() {
 		})
 
 		It("Success", func() {
-			signature.SignedMessage = CORRECT_SIGNATURE
+			signature.SignedMessage = ELECTOR1_CORRECT_SIGNATURE
 
 			electorChaincode.MockTransactionStart("save signature")
 			Expect(signatureStore.PutOne(signature)).Should(Succeed())
@@ -62,8 +62,8 @@ var _ = Describe("Signature store", func() {
 		It("Success", func() {
 			s := &models.Signature{
 				ElectionName:  "Best Crypto Currency",
-				ElectorMSP:    "Org2MSP",
-				SignedMessage: CORRECT_SIGNATURE,
+				ElectorMSP:    ELECTOR1_MSP,
+				SignedMessage: ELECTOR1_CORRECT_SIGNATURE,
 			}
 
 			electorChaincode.MockTransactionStart("get signature")
