@@ -1,29 +1,21 @@
 package main
 
-import "elector/chaincode/utils"
+import (
+	"elector/chaincode"
+	"log"
 
-// import (
-// 	"elector/chaincode"
-// 	"elector/chaincode/api"
-// 	"log"
-
-// 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-// )
+	"github.com/hyperledger/fabric-contract-api-go/contractapi"
+)
 
 func main() {
-	// chaincode := &chaincode.SmartContract{
-	// 	AdminAPI: api.AdminAPI{},
-	// 	UserAPI:  api.UserAPI{},
-	// }
+	chaincode := &chaincode.SmartContract{}
 
-	// salairSmartContract, err := contractapi.NewChaincode(chaincode)
-	// if err != nil {
-	// 	log.Panicf("error creating chaincode: %v", err)
-	// }
+	salairSmartContract, err := contractapi.NewChaincode(chaincode)
+	if err != nil {
+		log.Panicf("error creating chaincode: %v", err)
+	}
 
-	// if err := salairSmartContract.Start(); err != nil {
-	// 	log.Panicf("error starting chaincode: %v", err)
-	// }
-
-	utils.SignTestMessage()
+	if err := salairSmartContract.Start(); err != nil {
+		log.Panicf("error starting chaincode: %v", err)
+	}
 }

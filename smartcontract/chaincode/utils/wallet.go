@@ -15,6 +15,7 @@ import (
 )
 
 const ELECTOR1_MSP = "Org1MSP.eDUwOTo6Q049VXNlcjFAb3JnMS5leGFtcGxlLmNvbSxPVT1jbGllbnQsTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUzo6Q049Y2Eub3JnMS5leGFtcGxlLmNvbSxPPW9yZzEuZXhhbXBsZS5jb20sTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUw=="
+const ELECTOR2_MSP = "Org2MSP.eDUwOTo6Q049VXNlcjFAb3JnMi5leGFtcGxlLmNvbSxPVT1jbGllbnQsTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUzo6Q049Y2Eub3JnMi5leGFtcGxlLmNvbSxPPW9yZzIuZXhhbXBsZS5jb20sTD1TYW4gRnJhbmNpc2NvLFNUPUNhbGlmb3JuaWEsQz1VUw=="
 
 // const ADMIN_PUB_KEY string = `-----BEGIN CERTIFICATE-----
 // MIICKTCCAc+gAwIBAgIQTUFZM0uHkjSVzbXSGfdXAjAKBggqhkjOPQQDAjBzMQsw
@@ -76,7 +77,7 @@ func SignTestMessage() {
 		log.Panic(err)
 	}
 
-	signature, err := signer.SignElectorPayload("Best Crypto Currency", ELECTOR1_MSP)
+	signature, err := signer.SignElectorPayload("Best Crypto Currency", ELECTOR2_MSP)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -86,7 +87,7 @@ func SignTestMessage() {
 		log.Panic(err)
 	}
 
-	payload := HashElectorPayload("Best Crypto Currency", ELECTOR1_MSP)
+	payload := HashElectorPayload("Best Crypto Currency", ELECTOR2_MSP)
 
 	ok := VerifySignature(pub, payload, signature)
 	fmt.Println(ok)
