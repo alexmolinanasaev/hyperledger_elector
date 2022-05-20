@@ -7,7 +7,7 @@ import (
 	expectcc "github.com/s7techlab/cckit/testing/expect"
 )
 
-var _ = Describe("contract API", func() {
+var _ = Describe("Admin API", func() {
 	chaincode := &chaincode.SmartContract{}
 
 	candidates := map[string]string{
@@ -24,57 +24,57 @@ var _ = Describe("contract API", func() {
 		"44":               "MINA 44!",
 	}
 
-	Context("Admin API", func() {
-		ctx, stub := prepMocksAsAdmin()
-		Context("New Election", func() {
-			Context("Admin role", func() {
-				It("Sucess", func() {
-					stub.MockTransactionStart("save signature")
-					expectcc.ResponseOk(chaincode.NewElection(ctx, "Best Crypto Currency", candidates, nominations))
-					stub.MockTransactionEnd("save signature")
-				})
+	electionName := "Best Crypto Currency"
 
-				It("Fail because already exist", func() {
-					stub.MockTransactionStart("save signature")
-					expectcc.ResponseError(chaincode.NewElection(ctx, "Best Crypto Currency", candidates, nominations), "already exist")
-					stub.MockTransactionEnd("save signature")
-				})
+	ctx, stub := prepMocksAsAdmin(nil)
+	Context("New Election", func() {
+		Context("Admin role", func() {
+			It("Sucess", func() {
+				stub.MockTransactionStart("save election")
+				expectcc.ResponseOk(chaincode.NewElection(ctx, electionName, candidates, nominations))
+				stub.MockTransactionEnd("save election")
 			})
 
-			It("Fail because of wrong identity", func() {
-				ctx, stub := prepMocksAsElector1()
-				stub.MockTransactionStart("save signature")
-				expectcc.ResponseError(chaincode.NewElection(ctx, "Best Crypto Currency", candidates, nominations), "can be called only by admin")
-				stub.MockTransactionEnd("save signature")
+			It("Fail because already exist", func() {
+				stub.MockTransactionStart("save election")
+				expectcc.ResponseError(chaincode.NewElection(ctx, electionName, candidates, nominations), "already exist")
+				stub.MockTransactionEnd("save election")
 			})
 		})
 
-		Context("Close Election", func() {
-			Context("Admin role", func() {
-				It("Sucess", func() {
-					stub.MockTransactionStart("save signature")
-					expectcc.ResponseOk(chaincode.CloseElection(ctx, "Best Crypto Currency"))
-					stub.MockTransactionEnd("save signature")
-				})
+		It("Fail because of wrong identity", func() {
+			ctx, stub := prepMocksAsElector1(nil)
+			stub.MockTransactionStart("save election")
+			expectcc.ResponseError(chaincode.NewElection(ctx, electionName, candidates, nominations), "can be called only by admin")
+			stub.MockTransactionEnd("save election")
+		})
+	})
 
-				It("Fail because already closed", func() {
-					stub.MockTransactionStart("save signature")
-					expectcc.ResponseError(chaincode.CloseElection(ctx, "Best Crypto Currency"), "already closed")
-					stub.MockTransactionEnd("save signature")
-				})
+	Context("Close Election", func() {
+		Context("Admin role", func() {
+			It("Sucess", func() {
+				stub.MockTransactionStart("close election")
+				expectcc.ResponseOk(chaincode.CloseElection(ctx, electionName))
+				stub.MockTransactionEnd("close election")
+			})
 
-				It("Fail because not exist", func() {
-					stub.MockTransactionStart("save signature")
-					expectcc.ResponseError(chaincode.CloseElection(ctx, "bad election name"), "non existent election cannot be closed")
-					stub.MockTransactionEnd("save signature")
-				})
+			It("Fail because already closed", func() {
+				stub.MockTransactionStart("close election")
+				expectcc.ResponseError(chaincode.CloseElection(ctx, electionName), "already closed")
+				stub.MockTransactionEnd("close election")
+			})
+
+			It("Fail because not exist", func() {
+				stub.MockTransactionStart("close election")
+				expectcc.ResponseError(chaincode.CloseElection(ctx, "nil"), "non existent election cannot be closed")
+				stub.MockTransactionEnd("close election")
 			})
 
 			It("Fail because of wrong identity", func() {
-				ctx, stub := prepMocksAsElector1()
-				stub.MockTransactionStart("save signature")
-				expectcc.ResponseError(chaincode.CloseElection(ctx, "Best Crypto Currency"), "can be called only by admin")
-				stub.MockTransactionEnd("save signature")
+				ctx, stub := prepMocksAsElector1(nil)
+				stub.MockTransactionStart("close election")
+				expectcc.ResponseError(chaincode.CloseElection(ctx, electionName), "can be called only by admin")
+				stub.MockTransactionEnd("close election")
 			})
 		})
 	})

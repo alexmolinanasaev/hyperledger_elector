@@ -15,6 +15,15 @@ import (
 type UserAPI struct{}
 
 func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) peer.Response {
+	isAdmin, err := utils.IsAdmin(ctx)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("identification error: %s", err))
+	}
+
+	if isAdmin {
+		return shim.Error("admin cannot vote")
+	}
+
 	stub := ctx.GetStub()
 
 	transient, err := stub.GetTransient()
@@ -31,10 +40,14 @@ func (api *UserAPI) Vote(ctx contractapi.TransactionContextInterface) peer.Respo
 		return shim.Error(fmt.Sprintf("election not found: %s", err))
 	}
 
+	if election == nil {
+		return shim.Error("cannot vote to non existent election")
+	}
+
 	mspID, _ := ctx.GetClientIdentity().GetMSPID()
 	userID, _ := ctx.GetClientIdentity().GetID()
 
-	electorMSP := fmt.Sprintf("%s%s", mspID, userID)
+	electorMSP := fmt.Sprintf("%s.%s", mspID, userID)
 
 	signature, err := models.NewSignature(electionName, electorMSP, signedMessage, utils.ADMIN_PUB_KEY)
 	if err != nil {
